@@ -2,25 +2,15 @@
 
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{fancyhdr}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{titlesec}
-\usepackage{wrapfig}
-\usepackage{subcaption}
 \usepackage{csquotes}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{listings}
 \usepackage{xcolor}
-\usepackage[
-    backend=biber,
-    style=ieee,
-    language=auto,
-    autolang=other
-]{biblatex}
-
-\addbibresource{refs.bib}
 
 % =========================================================
 % HEADER DAN FOOTER
@@ -63,174 +53,34 @@
 \end{center}
 
 % =========================================================
-% REVIEW GOTO PROGRAM
-% =========================================================
-
-\section{Review Program GOTO}
-
-Dari slide pada pertemuan ketiga, diketahui bahwa GOTO Program memiliki
-ketentuan-ketentuan berikut.
-\begin{itemize}
-    \item tipe data berupa $\mathbb{N} \in \{0,1,2, ...\}$,
-    \item variabel berupa $\{x_0, x_1, x_2, ...\}$,
-    \item label berupa $\{L_1, L_2, L_3, ...\}$,
-    \item simbol berupa $\{:=, =0, ;, :, +1, -1, \text{IF}, \text{THEN},
-    \text{GOTO}, \text{HALT}\}$.
-\end{itemize}
-
-Sebuah GOTO program berbentuk daftar baris berlabel
-$L_1:S_1;\,L_2:S_2;\,\dots;\,L_n:S_n$, dengan setiap statement $S_i$
-berupa salah satu dari lima bentuk berikut (berbeda dengan WHILE/LOOP,
-sintaks GOTO \textbf{tidak rekursif}, murni berupa daftar linear).
-
-\begin{enumerate}
-    \item $x := x+1$
-    \item $x := x-1$
-    \item $\texttt{GOTO } L$
-    \item $\texttt{IF } x=0 \texttt{ THEN GOTO } L$
-    \item $\texttt{HALT}$
-\end{enumerate}
-
-\subsection{Semantik}
-
-Instruksi dieksekusi \textbf{berurutan} sesuai urutan label $L_1, L_2,
-\dots$, kecuali jika bertemu $\texttt{GOTO } L$ (lompat langsung ke
-label $L$) atau $\texttt{IF } x=0 \texttt{ THEN GOTO } L$ (lompat ke
-$L$ hanya jika $x=0$, jika tidak lanjut ke baris berikutnya).
-Operasi $x:=x+1$/$x:=x-1$ bekerja sama seperti pada WHILE program
-(\textit{decrement} tidak menghasilkan bilangan negatif). \texttt{HALT}
-menghentikan eksekusi program. Variabel $x_1,\dots,x_k$ diisi input,
-variabel lain dimulai dari $0$, dan $x_0$ adalah output.
-
-\subsection{Fungsi GOTO-computable}
-
-Fungsi parsial $f:\mathbb{N}^k \rightharpoonup \mathbb{N}$ disebut
-\textbf{GOTO-computable} jika ada GOTO program $P$ berinput $k$
-sehingga: jika $f$ terdefinisi pada input $\vec{a}$, maka $P$ berhenti
-dengan $x_0 = f(\vec{a})$; jika $f$ tidak terdefinisi pada $\vec{a}$,
-maka $P$ tidak pernah berhenti untuk input tersebut.
-
-\subsection{Skema Umum Penerjemahan (dipakai pada Problem 3.2 dan 3.3)}
-\label{sec:skema}
-
-Dari pertemuan ketiga, WHILE-computable dan GOTO-computable adalah
-himpunan fungsi yang \textbf{identik} (Teorema 3.3 dan Teorema 3.4).
-Dua skema penerjemahan berikut dipakai berulang kali pada laporan ini.
-
-\paragraph{Skema GOTO $\to$ WHILE (Teorema 3.3).}
-GOTO program $L_1:S_1;\dots;L_n:S_n$ diterjemahkan menjadi satu WHILE
-loop besar dengan variabel kontrol $y$ (berperan sebagai \textit{program
-counter}):
-\begin{lstlisting}
-y := 1;
-WHILE y != 0 DO
-    IF y = 1 THEN P1 END;
-    IF y = 2 THEN P2 END;
-    ...
-    IF y = n THEN Pn END
-END
-\end{lstlisting}
-dengan $P_i$ diturunkan dari $S_i$ menurut aturan:
-\begin{itemize}
-    \item $S_i = (x:=x\pm1)$ $\Rightarrow$ $P_i = (x:=x\pm1;\ y:=y+1)$,
-    \item $S_i = (\texttt{GOTO } L_j)$ $\Rightarrow$ $P_i = (y:=j)$,
-    \item $S_i = (\texttt{IF } x=0 \texttt{ THEN GOTO } L_j)$
-    $\Rightarrow$ $P_i = (\texttt{IF } x=0 \texttt{ THEN } y:=j
-    \texttt{ ELSE } y:=y+1 \texttt{ END})$,
-    \item $S_i = \texttt{HALT}$ $\Rightarrow$ $P_i = (y:=0)$.
-\end{itemize}
-Variabel kontrol $y$ persis meniru nilai label yang sedang aktif
-dieksekusi pada GOTO program aslinya; \texttt{WHILE y != 0} berhenti
-tepat ketika $y$ diset ke $0$ oleh terjemahan \texttt{HALT}.
-
-\paragraph{Skema WHILE $\to$ GOTO (Teorema 3.4).}
-WHILE program $P_1;P_2;\dots;P_n$ diterjemahkan secara rekursif
-mengikuti struktur sintaks WHILE, menjadi
-$L_1:S_1;\dots;L_m:\texttt{HALT}$, dengan aturan:
-\begin{itemize}
-    \item $P_i = (x:=x\pm1)$ $\Rightarrow$ langsung jadi satu baris
-    $L_j: x:=x\pm1$,
-    \item $P_i = (\texttt{WHILE } x\neq0 \texttt{ DO } Q \texttt{ END})$
-    $\Rightarrow$ diterjemahkan menjadi
-    \begin{lstlisting}
-Lj:     IF x = 0 THEN GOTO Ll
-        [terjemahan rekursif dari Q]
-L(l-1): GOTO Lj
-Ll:     [lanjutan setelah loop]
-    \end{lstlisting}
-\end{itemize}
-Setiap $P_i$ bisa menghasilkan lebih dari satu baris GOTO (khususnya
-jika $P_i$ berupa WHILE loop, termasuk WHILE loop bersarang), sehingga
-label $L_j$ tidak selalu sama dengan indeks $i$.
-
-% =========================================================
 % PROBLEM 3.1
 % =========================================================
 
 \section{Problem 3.1 -- \textit{infloop}}
 
-Diberikan fungsi parsial
-\[
-\text{infloop}:\mathbb{N}\rightharpoonup\mathbb{N}, \qquad
-\text{untuk semua } x_1\in\mathbb{N},\ \text{infloop}(x_1)\uparrow.
-\]
-Akan dibuktikan bahwa \textit{infloop} merupakan fungsi GOTO-computable.
+Akan dibuktikan bahwa $\textit{infloop}(x_1)\uparrow$ untuk semua
+$x_1\in\mathbb{N}$ adalah GOTO-computable. Karena fungsi tidak
+terdefinisi di seluruh domain, program harus tidak pernah berhenti untuk
+input apa pun.
 
-\subsection{Ide Penyelesaian}
+\textbf{Program GOTO.} Program ditunjukkan pada Gambar~\ref{fig:goto31},
+berinput $k=1$ dengan $m=1$.
 
-Karena \textit{infloop} tidak terdefinisi untuk \textbf{semua} input,
-berdasarkan definisi GOTO-computable, program yang dikonstruksi harus
-\textbf{tidak pernah berhenti}, apapun nilai $x_1$-nya. Cukup dibuat
-dua baris yang saling melompat tanpa syarat, tanpa pernah menyentuh
-statement \texttt{HALT} dan tanpa pernah melewati baris terakhir
-program.
+\textbf{Bukti.} Klaim: setelah berapa pun langkah berhingga, label aktif
+selalu $L_1$ atau $L_2$. Basis: eksekusi mulai dari $L_1$. Langkah
+induktif: dari $L_1$ (bukan lompatan/\texttt{HALT}), kontrol jatuh ke
+$L_2$; dari $L_2$ (\texttt{GOTO L1}), kontrol kembali ke $L_1$. Jadi
+label aktif selalu $L_1$ atau $L_2$; program tidak pernah menemui
+\texttt{HALT} dan tidak pernah melewati baris terakhir. Program tidak
+pernah berhenti untuk $x_1$ berapa pun, persis definisi
+$\textit{infloop}$. $\blacksquare$
 
-\subsection{Program GOTO}
-
-\begin{lstlisting}
-L1: x1 := x1 + 1;
-L2: GOTO L1
-\end{lstlisting}
-
-Program ini berinput $k=1$ (yaitu $x_1$) dengan $m=1$ (variabel
-tertinggi yang dipakai hanya $x_1$).
-
-\subsection{Bukti \textit{Correctness} dan Terminasi}
-
-Akan ditunjukkan bahwa untuk sembarang $x_1\in\mathbb{N}$, program di
-atas \textbf{tidak pernah berhenti}, sesuai dengan definisi
-GOTO-computable untuk fungsi yang tidak terdefinisi di seluruh domain.
-
-\paragraph{Klaim.} Setelah sejumlah langkah eksekusi berapa pun
-(berhingga), label yang sedang aktif selalu berupa $L_1$ atau $L_2$.
-
-\paragraph{Bukti klaim (induksi pada banyaknya langkah).}
-\textbf{Basis:} pada langkah ke-0 (sebelum eksekusi dimulai), label
-aktif adalah $L_1$, sesuai konvensi bahwa eksekusi GOTO program selalu
-dimulai dari $L_1$.
-\textbf{Langkah induktif:} andaikan pada suatu langkah label aktif
-adalah $L_1$ atau $L_2$.
-\begin{itemize}
-    \item Jika label aktif $L_1$ (statement $x_1:=x_1+1$, bukan
-    lompatan bersyarat maupun \texttt{HALT}), setelah dieksekusi,
-    kontrol otomatis lanjut ke baris berikutnya, yaitu $L_2$.
-    \item Jika label aktif $L_2$ (statement $\texttt{GOTO } L_1$),
-    setelah dieksekusi, kontrol berpindah ke $L_1$.
-\end{itemize}
-Pada kedua kasus, label aktif berikutnya tetap berupa $L_1$ atau
-$L_2$, sehingga klaim terbukti benar untuk semua langkah berikutnya.
-$\blacksquare$
-
-\paragraph{Kesimpulan.}
-Karena label aktif tidak pernah berupa label lain (khususnya tidak
-pernah berupa \texttt{HALT}, sebab tidak ada statement \texttt{HALT}
-pada program ini sama sekali), dan program juga tidak pernah melewati
-baris terakhir ($L_2$ selalu melompat kembali ke $L_1$, bukan
-dilanjutkan ke ``baris sesudah $L_2$'' yang memang tidak ada), maka
-eksekusi program \textbf{tidak pernah berhenti}, untuk nilai awal
-$x_1$ berapa pun. Hal ini persis sesuai dengan definisi
-$\text{infloop}(x_1)\uparrow$ untuk semua $x_1\in\mathbb{N}$. Oleh
-karena itu, \textit{infloop} terbukti GOTO-computable. $\blacksquare$
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.62\textwidth]{images/goto31.png}
+    \caption{Program GOTO Problem 3.1.}
+    \label{fig:goto31}
+\end{figure}
 
 % =========================================================
 % PROBLEM 3.2
@@ -238,8 +88,9 @@ karena itu, \textit{infloop} terbukti GOTO-computable. $\blacksquare$
 
 \section{Problem 3.2 -- GOTO $\to$ WHILE}
 
-Diberikan fungsi parsial $f:\mathbb{N}^2\rightharpoonup\mathbb{N}$
-yang dihitung oleh GOTO program berikut.
+Diberikan GOTO program berikut; program berinput $k=2$, $m=2$, $n=9$
+baris, dan $L_8$ (\texttt{GOTO L2}) tidak pernah dituju (\textit{dead
+code}) namun tetap diterjemahkan agar skema berlaku umum.
 
 \begin{lstlisting}
 L1: IF x1 = 0 THEN GOTO L9;
@@ -253,289 +104,46 @@ L8: GOTO L2;
 L9: HALT
 \end{lstlisting}
 
-Program ini berinput $k=2$ (yaitu $x_1,x_2$), dengan $m=2$ (variabel
-tertinggi yang dipakai adalah $x_2$), dan $n=9$ baris. Perhatikan
-bahwa baris $L_8$ (\texttt{GOTO L2}) tidak pernah dituju oleh
-statement manapun, sehingga merupakan \textit{dead code}; baris ini
-tetap harus ikut diterjemahkan agar penerjemahan berlaku umum
-(mengikuti skema pada Bagian~\ref{sec:skema}), meskipun tidak
-memengaruhi hasil akhir.
+\textbf{Semantik program.} Selama $x_1\neq0$ dan $x_2\neq0$, satu putaran
+$L_1$--$L_7$ menambah $x_0$ sebanyak $2$ serta mengurangi $x_1$ dan $x_2$
+masing-masing $1$; putaran berulang $\min(x_1,x_2)$ kali. Bila $x_1\leq
+x_2$, $L_1$ langsung melompat ke \texttt{HALT} sehingga $x_0=2x_1$; bila
+$x_1>x_2$, $L_2$ menambah $x_0$ sekali lagi sebelum $L_3$ melompat,
+sehingga $x_0=2x_2+1$. Jadi
+$f(x_1,x_2)=2\min(x_1,x_2)+[x_1>x_2]$, fungsi total.
 
-\subsection{Ide Penyelesaian}
+\textbf{Program WHILE} (skema GOTO $\to$ WHILE dengan variabel kontrol
+$x_3$; Gambar~\ref{fig:while32}). Setiap statement $S_i$ menjadi blok
+\texttt{IF x3=i}, dengan pemetaan: $L_1,L_3$ menjadi lompatan bersyarat
+($x_3:=9$ atau $x_3:=i{+}1$), $L_2,L_4$ menambah $x_0$ lalu $x_3:=i{+}1$,
+$L_5,L_6$ mengurangi $x_2,x_1$ lalu $x_3:=i{+}1$, $L_7$ menjadi $x_3:=1$,
+$L_8$ menjadi $x_3:=2$, dan $L_9$ (\texttt{HALT}) menjadi $x_3:=0$.
 
-Sebelum menerjemahkan, akan ditelusuri dahulu apa yang sebenarnya
-dihitung oleh program ini, untuk memvalidasi hasil akhir nanti.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/playground.png}
+    \caption{Kode Ruby WHILE program Problem 3.2 beserta hasil
+    eksekusinya, dijalankan pada \textit{online Ruby playground}
+    (\url{https://onecompiler.com/ruby}).}
+    \label{fig:while32}
+\end{figure}
 
-Selama $x_1\neq0$ dan $x_2\neq0$ pada awal satu putaran ($L_1$),
-program mengeksekusi $L_2$ ($x_0{+}{=}1$), $L_3$ (tidak lompat karena
-$x_2\neq0$), $L_4$ ($x_0{+}{=}1$ lagi), $L_5$ ($x_2{-}{=}1$), $L_6$
-($x_1{-}{=}1$), lalu kembali ke $L_1$ -- yaitu \textbf{satu putaran
-penuh menambah $x_0$ sebanyak $2$, sekaligus mengurangi $x_1$ dan
-$x_2$ masing-masing $1$}. Putaran penuh ini berulang sebanyak
-$m=\min(x_1,x_2)$ kali, sampai salah satu dari $x_1$ atau $x_2$
-mencapai $0$.
+Hasil eksekusi pada Gambar~\ref{fig:while32} sesuai formula
+$f=2\min(x_1,x_2)+[x_1>x_2]$, misalnya $f(5,2)=5$, $f(4,4)=8$, dan
+$f(4,9)=8$.
 
-Setelah $m$ putaran penuh, ada dua kemungkinan:
-\begin{itemize}
-    \item Jika $x_1\leq x_2$ (sehingga $x_1$ mencapai $0$ lebih dulu
-    atau bersamaan), pada putaran berikutnya $L_1$ langsung mendeteksi
-    $x_1=0$ dan lompat ke $L_9$ (\texttt{HALT}) \textbf{tanpa}
-    tambahan pada $x_0$. Total: $x_0 = 2m = 2x_1$.
-    \item Jika $x_1 > x_2$ (sehingga $x_2$ mencapai $0$ lebih dulu),
-    pada putaran berikutnya $L_1$ tidak lompat (karena $x_1\neq0$),
-    $L_2$ menambah $x_0$ satu kali lagi, lalu $L_3$ mendeteksi
-    $x_2=0$ dan lompat ke $L_9$. Total: $x_0 = 2m+1 = 2x_2+1$.
-\end{itemize}
-
-Sehingga secara ringkas,
-\[
-f(x_1,x_2) =
-\begin{cases}
-2x_1, & \text{jika } x_1 \leq x_2,\\
-2x_2+1, & \text{jika } x_1 > x_2,
-\end{cases}
-\qquad\text{yaitu}\qquad
-f(x_1,x_2) = 2\min(x_1,x_2) +
-\begin{cases}
-1, & x_1>x_2\\
-0, & x_1\leq x_2.
-\end{cases}
-\]
-$f$ adalah fungsi \textbf{total} (program selalu berhenti untuk semua
-$x_1,x_2\in\mathbb{N}$, dibuktikan formal pada
-Subbagian~\ref{sec:3.2-proof}).
-
-Untuk mengkonstruksi WHILE program yang menghitung $f$, dipakai skema
-umum GOTO $\to$ WHILE pada Bagian~\ref{sec:skema}, dengan variabel
-kontrol $x_3$ (fresh, belum dipakai di program asal) berperan sebagai
-$y$. Karena skema ini terbukti benar secara umum (Teorema 3.3),
-WHILE program hasil terjemahan otomatis menghitung $f$ yang sama,
-tanpa perlu didesain ulang dari nol.
-
-\subsection{Pemetaan Statement ke $P_i$}
-
-\begin{center}
-\begin{tabular}{c|l|l}
-$i$ & $S_i$ (GOTO) & $P_i$ (WHILE) \\
-\hline
-1 & \texttt{IF x1=0 THEN GOTO L9} & \texttt{IF x1=0 THEN x3:=9 ELSE x3:=2 END} \\
-2 & \texttt{x0:=x0+1} & \texttt{x0:=x0+1; x3:=3} \\
-3 & \texttt{IF x2=0 THEN GOTO L9} & \texttt{IF x2=0 THEN x3:=9 ELSE x3:=4 END} \\
-4 & \texttt{x0:=x0+1} & \texttt{x0:=x0+1; x3:=5} \\
-5 & \texttt{x2:=x2-1} & \texttt{x2:=x2-1; x3:=6} \\
-6 & \texttt{x1:=x1-1} & \texttt{x1:=x1-1; x3:=7} \\
-7 & \texttt{GOTO L1} & \texttt{x3:=1} \\
-8 & \texttt{GOTO L2} & \texttt{x3:=2} \\
-9 & \texttt{HALT} & \texttt{x3:=0} \\
-\end{tabular}
-\end{center}
-
-\subsection{Program WHILE (hasil terjemahan)}
-
-\begin{lstlisting}
-x3 := 1;
-WHILE x3 != 0 DO
-    IF x3 = 1 THEN
-        IF x1 = 0 THEN x3 := 9 ELSE x3 := 2 END
-    END;
-    IF x3 = 2 THEN
-        x0 := x0 + 1;
-        x3 := 3
-    END;
-    IF x3 = 3 THEN
-        IF x2 = 0 THEN x3 := 9 ELSE x3 := 4 END
-    END;
-    IF x3 = 4 THEN
-        x0 := x0 + 1;
-        x3 := 5
-    END;
-    IF x3 = 5 THEN
-        x2 := x2 - 1;
-        x3 := 6
-    END;
-    IF x3 = 6 THEN
-        x1 := x1 - 1;
-        x3 := 7
-    END;
-    IF x3 = 7 THEN
-        x3 := 1
-    END;
-    IF x3 = 8 THEN
-        x3 := 2
-    END;
-    IF x3 = 9 THEN
-        x3 := 0
-    END
-END
-\end{lstlisting}
-
-Program ini memakai \textit{syntax sugar} \texttt{IF ... THEN ... END}
-dan \texttt{IF ... THEN ... ELSE ... END} yang sudah didefinisikan
-pada pertemuan kedua dan ketiga (sesuai catatan soal, \textit{syntax
-sugar} diperbolehkan untuk WHILE program).
-
-\subsection{Implementasi Ruby}
-
-\begin{lstlisting}[language=Ruby]
-# f.rb
-# Implementasi Ruby dari WHILE program hasil terjemahan mekanis
-# (skema Teorema 3.3) dari GOTO program f pada Problem 3.2.
-# Variabel x3 berperan sebagai variabel kontrol "y" (program counter).
-
-x1 = ARGV[0].to_i
-x2 = ARGV[1].to_i
-
-x0 = 0
-x3 = 0
-
-# x3 := 1
-while x3 != 0
-  x3 = x3 - 1
-end
-x3 = x3 + 1
-
-while x3 != 0
-
-  if x3 == 1
-    if x1 == 0
-      x3 = 9
-    else
-      x3 = 2
-    end
-  end
-
-  if x3 == 2
-    x0 = x0 + 1
-    x3 = 3
-  end
-
-  if x3 == 3
-    if x2 == 0
-      x3 = 9
-    else
-      x3 = 4
-    end
-  end
-
-  if x3 == 4
-    x0 = x0 + 1
-    x3 = 5
-  end
-
-  if x3 == 5
-    x2 = x2 - 1
-    x3 = 6
-  end
-
-  if x3 == 6
-    x1 = x1 - 1
-    x3 = 7
-  end
-
-  if x3 == 7
-    x3 = 1
-  end
-
-  if x3 == 8   # baris mati (L8 tidak pernah dituju)
-    x3 = 2
-  end
-
-  if x3 == 9
-    x3 = 0
-  end
-
-end
-
-puts "f(#{ARGV[0]}, #{ARGV[1]}) = #{x0}"
-\end{lstlisting}
-
-\subsection{Hasil Eksekusi}
-
-Program diuji dengan beberapa pasangan input, mencakup kasus
-$x_1\leq x_2$, $x_1>x_2$, dan $x_1=x_2$, dibandingkan dengan formula
-$f(x_1,x_2)$ hasil analisis semantik di atas.
-
-\begin{lstlisting}
-$ ruby source/f.rb 0 0
-f(0, 0) = 0
-$ ruby source/f.rb 0 5
-f(0, 5) = 0
-$ ruby source/f.rb 5 0
-f(5, 0) = 1
-$ ruby source/f.rb 3 0
-f(3, 0) = 1
-$ ruby source/f.rb 1 3
-f(1, 3) = 2
-$ ruby source/f.rb 2 1
-f(2, 1) = 3
-$ ruby source/f.rb 4 4
-f(4, 4) = 8
-$ ruby source/f.rb 5 2
-f(5, 2) = 5
-$ ruby source/f.rb 7 3
-f(7, 3) = 7
-\end{lstlisting}
-
-Seluruh hasil sesuai dengan $f(x_1,x_2)=2\min(x_1,x_2)+[x_1>x_2]$,
-misalnya $f(5,2)=2\cdot2+1=5$ dan $f(4,4)=2\cdot4+0=8$.
-
-\subsection{Bukti \textit{Correctness} dan Terminasi}
-\label{sec:3.2-proof}
-
-\paragraph{Langkah 1 -- GOTO program asli selalu berhenti.}
-Perhatikan bahwa setiap kali kontrol kembali ke $L_1$ dengan
-$x_1\neq0$ dan $x_2\neq0$, nilai $\min(x_1,x_2)$ berkurang tepat $1$
-pada akhir putaran (karena $x_1$ dan $x_2$ sama-sama dikurangi $1$
-pada $L_5$-$L_6$). Karena $\min(x_1,x_2)\in\mathbb{N}$ tidak mungkin
-berkurang tanpa batas, setelah paling banyak $\min(x_1,x_2)+1$ putaran
-salah satu dari $x_1=0$ (dideteksi di $L_1$) atau $x_2=0$ (dideteksi
-di $L_3$) pasti tercapai, sehingga program melompat ke $L_9$ dan
-berhenti. Jadi GOTO program berhenti untuk semua $(x_1,x_2)\in
-\mathbb{N}^2$, dengan nilai akhir $x_0=f(x_1,x_2)$ seperti diturunkan
-pada Ide Penyelesaian.
-
-\paragraph{Langkah 2 -- WHILE hasil terjemahan mensimulasikan GOTO
-langkah demi langkah.}
-Diklaim: pada setiap saat, nilai variabel kontrol $x_3$ pada WHILE
-program sama dengan indeks label yang sedang/akan dieksekusi pada
-GOTO program, dan nilai $x_0,x_1,x_2$ pada kedua program selalu sama.
-
-\textit{Basis:} sebelum WHILE loop utama dimulai, $x_3=1$ (dari
-$x_3:=1$ di awal), sama seperti GOTO program yang selalu mulai
-dieksekusi dari $L_1$; nilai $x_0,x_1,x_2$ sama-sama berupa input
-awal.
-
-\textit{Langkah induktif:} andaikan sebelum satu langkah GOTO
-$S_i$ dieksekusi (dengan kontrol berada di $L_i$), invarian di atas
-berlaku ($x_3=i$, nilai variabel sama). Pada WHILE program, karena
-$x_3=i$, blok \texttt{IF x3=i THEN} $P_i$ \texttt{END} adalah
-satu-satunya blok pada barisan $P_1,\dots,P_9$ yang kondisinya bisa
-bernilai benar terhadap nilai $x_3$ \textbf{sebelum} $P_i$ dieksekusi
-(karena kesembilan kondisi $x_3=1,\dots,x_3=9$ saling lepas), sehingga
-$P_i$ pasti dieksekusi. Berdasarkan tabel pemetaan, $P_i$ melakukan
-persis operasi yang sama pada $x_0,x_1,x_2$ seperti $S_i$ (jika $S_i$
-mengubah suatu variabel), dan mengubah $x_3$ menjadi indeks label
-berikutnya yang \textbf{persis sama} dengan label berikutnya yang
-dituju GOTO program setelah $S_i$ (baik itu $i+1$ untuk statement
-biasa, atau $j$ untuk \texttt{GOTO}/\texttt{IF}). Blok-blok
-\texttt{IF x3=i'} lain untuk $i' \neq$ nilai baru $x_3$ tidak
-mengubah apapun. Sehingga invarian tetap terjaga untuk label
-berikutnya. Dengan induksi ini berlaku untuk setiap langkah eksekusi
-GOTO program.
-
-\textit{Terminasi bersama:} GOTO program berhenti ketika mengeksekusi
-$S_9=\texttt{HALT}$ (Langkah 1), yang oleh invarian bersesuaian dengan
-$x_3=9$, sehingga WHILE program mengeksekusi $P_9=(x_3:=0)$, membuat
-kondisi \texttt{WHILE x3 != 0} menjadi salah dan loop utama berhenti.
-Karena Langkah 1 menjamin GOTO program berhenti untuk semua input,
-WHILE program hasil terjemahan juga berhenti untuk semua input, dan
-berdasarkan invarian di atas, nilai akhir $x_0$ pada WHILE program
-sama dengan nilai akhir $x_0$ pada GOTO program, yaitu $f(x_1,x_2)$.
-
-\paragraph{Kesimpulan.}
-WHILE program hasil terjemahan berhenti untuk semua
-$(x_1,x_2)\in\mathbb{N}^2$ dan menghasilkan $x_0=f(x_1,x_2)$,
-sehingga terbukti WHILE program tersebut menghitung $f$. $\blacksquare$
+\textbf{Bukti.} (i) GOTO asli selalu berhenti: setiap putaran penuh
+mengurangi $\min(x_1,x_2)$ tepat $1$, sehingga setelah paling banyak
+$\min(x_1,x_2)+1$ putaran salah satu variabel bernilai $0$ dan terdeteksi
+di $L_1$ atau $L_3$, lalu program berhenti. (ii) WHILE hasil terjemahan
+mensimulasikan GOTO langkah demi langkah: invariannya, nilai $x_3$ selalu
+sama dengan indeks label aktif GOTO dan nilai $x_0,x_1,x_2$ sama pada
+kedua program (basis: $x_3=1$ berpadanan dengan mulai di $L_1$; langkah
+induktif: karena kondisi $x_3=1,\dots,9$ saling lepas, hanya blok
+$P_i$ untuk $i=x_3$ yang aktif dan efeknya persis $S_i$ beserta label
+berikutnya). Saat GOTO mencapai $L_9$ (\texttt{HALT}), WHILE mengeksekusi
+$x_3:=0$ dan loop utama berhenti dengan nilai $x_0$ yang sama, yaitu
+$f(x_1,x_2)$. $\blacksquare$
 
 % =========================================================
 % PROBLEM 3.3
@@ -543,9 +151,7 @@ sehingga terbukti WHILE program tersebut menghitung $f$. $\blacksquare$
 
 \section{Problem 3.3 -- WHILE $\to$ GOTO}
 
-Diberikan fungsi parsial $g:\mathbb{N}^2\rightharpoonup\mathbb{N}$
-yang dihitung oleh WHILE program berikut.
-
+Diberikan WHILE program berikut.
 \begin{lstlisting}
 WHILE x1 != 0 DO
     WHILE x2 != 0 DO
@@ -556,165 +162,48 @@ WHILE x1 != 0 DO
 END
 \end{lstlisting}
 
-\subsection{Ide Penyelesaian}
+\textbf{Semantik program.} Bila $x_1=0$, loop luar tidak dieksekusi dan
+$x_0=0$. Bila $x_1>0$, loop dalam memindahkan seluruh nilai awal $x_2$ ke
+$x_0$ (hanya efektif pada putaran pertama karena $x_2$ tidak diisi ulang),
+lalu $x_1$ dikurangi sampai habis. Jadi
+$g(x_1,x_2)=x_2$ untuk $x_1>0$, dan $g(0,x_2)=0$; fungsi total.
 
-Ditelusuri dahulu makna semantik program ini. Selama $x_1\neq0$, pada
-setiap putaran loop luar, loop dalam (\texttt{WHILE x2 != 0 DO ...
-END}) mengurangi $x_2$ sampai $0$ sambil memindahkan seluruh nilainya
-ke $x_0$. Karena $x_2$ tidak pernah diisi ulang di dalam loop luar,
-proses ini \textbf{hanya efektif satu kali}, yaitu pada putaran
-pertama loop luar (dengan asumsi $x_1>0$): seluruh nilai awal $x_2$
-dipindahkan ke $x_0$, dan pada putaran-putaran loop luar berikutnya
-loop dalam tidak lagi berbuat apa-apa (karena $x_2$ sudah $0$), loop
-luar tersebut hanya mengurangi $x_1$ sampai habis.
+\textbf{Program GOTO.} Hasil terjemahan rekursif skema WHILE $\to$ GOTO
+ditunjukkan pada Gambar~\ref{fig:goto33}: $L_1$--$L_2$ menguji kondisi
+loop luar, $L_2$--$L_5$ adalah terjemahan loop dalam ($L_6$ = ``setelah
+loop dalam''), $L_6$--$L_7$ adalah sisa isi loop luar, dan $L_8$ adalah
+``setelah loop luar'' (\texttt{HALT}).
 
-Jika $x_1=0$ sejak awal, loop luar tidak pernah dieksekusi sama
-sekali, sehingga $x_0$ tetap $0$ (nilai awal), berapapun nilai $x_2$.
+\textbf{Verifikasi.} Untuk $x_1=3,x_2=5$: loop dalam menaikkan $x_0$ ke
+$5$ sambil menghabiskan $x_2$, lalu $x_1$ dikurangi sampai $0$; hasil
+akhir $x_0=5=x_2$, sesuai $g(3,5)=5$. Untuk $x_1=0$, $L_1$ langsung
+melompat ke \texttt{HALT} sehingga $x_0=0$.
 
-Sehingga,
-\[
-g(x_1,x_2) =
-\begin{cases}
-x_2, & \text{jika } x_1>0,\\
-0, & \text{jika } x_1=0.
-\end{cases}
-\]
-$g$ adalah fungsi \textbf{total} (kedua loop dijamin berhenti, karena
-$x_2$ dan $x_1$ hanya berkurang; dibuktikan formal pada
-Subbagian~\ref{sec:3.3-proof}).
+\textbf{Bukti.} (i) WHILE asli selalu berhenti: loop dalam mengurangi
+$x_2$ tepat $1$ tiap iterasi (berhenti setelah $x_2$ iterasi), dan loop
+luar mengurangi $x_1$ tepat $1$ tiap iterasi (berhenti setelah $x_1$
+iterasi). (ii) GOTO hasil terjemahan ekivalen, dibuktikan dengan induksi
+struktural: kasus dasar $x:=x\pm1$ identik; kasus sequencing menempatkan
+terjemahan $P_b$ tepat setelah $P_a$; kasus WHILE loop, bila $x=0$ maka
+\texttt{IF} langsung melompat ke $L_\ell$ (loop dilewati), dan bila
+$x\neq0$ maka isi loop dieksekusi lalu \texttt{GOTO }$L_j$ mengulang
+pengujian -- persis semantik \texttt{WHILE}. Karena WHILE asli berhenti,
+GOTO hasil terjemahan juga berhenti, dengan nilai $x_0=g(x_1,x_2)$.
+$\blacksquare$
 
-Untuk mengkonstruksi GOTO program yang menghitung $g$, dipakai skema
-umum WHILE $\to$ GOTO pada Bagian~\ref{sec:skema} secara
-\textbf{rekursif}: program tersusun dari \texttt{WHILE x1 != 0 DO
-$Q$ END}, dengan $Q = (\texttt{WHILE x2 != 0 DO } R \texttt{ END}\,;\,
-x_1{:=}x_1{-}1)$, dan $R = (x_0{:=}x_0{+}1\,;\,x_2{:=}x_2{-}1)$.
-Loop dalam diterjemahkan lebih dulu, kemudian hasilnya disisipkan ke
-dalam terjemahan loop luar.
-
-\subsection{Program GOTO (hasil terjemahan)}
-
-\begin{lstlisting}
-L1: IF x1 = 0 THEN GOTO L8;
-L2: IF x2 = 0 THEN GOTO L6;
-L3: x0 := x0 + 1;
-L4: x2 := x2 - 1;
-L5: GOTO L2;
-L6: x1 := x1 - 1;
-L7: GOTO L1;
-L8: HALT
-\end{lstlisting}
-
-Program ini berinput $k=2$ (yaitu $x_1,x_2$), dengan $m=2$ dan $n=8$
-baris. Catatan: sesuai instruksi soal, GOTO program ini ditulis
-manual (tidak dibantu Ruby); listing di atas disertakan pula di
-laporan digital ini untuk kejelasan, mengikuti versi tulisan tangan.
-
-\paragraph{Korespondensi label.} $L_1$-$L_2$ berperan sebagai
-pengujian kondisi loop luar; $L_2$-$L_5$ adalah hasil terjemahan
-langsung dari loop dalam \texttt{WHILE x2 != 0 DO $R$ END} (dengan
-$L_6$ sebagai label ``setelah loop dalam''); $L_6$ adalah sisa isi
-loop luar setelah loop dalam ($x_1:=x_1-1$); $L_7$ melompat kembali
-ke pengujian loop luar; $L_8$ adalah label ``setelah loop luar'',
-yaitu \texttt{HALT}.
-
-\subsection{Verifikasi dengan Penelusuran}
-
-Sebagai pengecekan tambahan (di luar bukti formal pada
-Subbagian~\ref{sec:3.3-proof}), berikut penelusuran untuk
-$x_1=3,x_2=5$ (kasus $x_1>0$):
-
-\begin{center}
-\begin{tabular}{c|ccc|l}
-Label aktif & $x_0$ & $x_1$ & $x_2$ & Keterangan \\
-\hline
-$L_1$ & 0 & 3 & 5 & $x_1\neq0\to L_2$ \\
-$L_2,\dots,L_5$ (5x) & $0\to5$ & 3 & $5\to0$ & loop dalam habiskan $x_2$ \\
-$L_2$ & 5 & 3 & 0 & $x_2=0\to L_6$ \\
-$L_6$ & 5 & 2 & 0 & $x_1:=x_1-1$ \\
-$L_7$ & 5 & 2 & 0 & $\to L_1$ \\
-$L_1,L_2,L_6,L_7$ (2x) & 5 & $2\to0$ & 0 & loop dalam tak berbuat apa2 \\
-$L_1$ & 5 & 0 & 0 & $x_1=0\to L_8$ \\
-$L_8$ & 5 & 0 & 0 & \texttt{HALT} \\
-\end{tabular}
-\end{center}
-
-Hasil akhir $x_0=5=x_2$ (nilai awal), sesuai $g(3,5)=5$. Untuk
-$x_1=0$ (berapapun $x_2$), $L_1$ langsung mendeteksi $x_1=0$ dan
-lompat ke $L_8$, sehingga $x_0=0$, sesuai $g(0,x_2)=0$.
-
-\subsection{Bukti \textit{Correctness} dan Terminasi}
-\label{sec:3.3-proof}
-
-\paragraph{Langkah 1 -- WHILE program asli selalu berhenti.}
-Loop dalam \texttt{WHILE x2 != 0 DO x0:=x0+1; x2:=x2-1 END}
-mengurangi $x_2$ tepat $1$ setiap iterasi tanpa pernah menambahnya,
-sehingga pasti berhenti setelah tepat nilai $x_2$ saat itu (berhingga)
-iterasi. Loop luar \texttt{WHILE x1 != 0 DO ... END} mengurangi $x_1$
-tepat $1$ setiap iterasi (pada baris $x_1:=x_1-1$, dieksekusi setelah
-loop dalam berhenti), sehingga loop luar juga pasti berhenti, setelah
-tepat nilai awal $x_1$ iterasi. Karena kedua loop berhenti (loop dalam
-berhenti pada setiap kemunculannya, loop luar berhenti secara
-keseluruhan), keseluruhan program berhenti untuk semua
-$(x_1,x_2)\in\mathbb{N}^2$, dengan nilai akhir $x_0=g(x_1,x_2)$
-seperti diturunkan pada Ide Penyelesaian.
-
-\paragraph{Langkah 2 -- GOTO hasil terjemahan mensimulasikan WHILE
-langkah demi langkah.}
-Dibuktikan dengan induksi struktural mengikuti struktur sintaks WHILE
-program (sesuai skema umum pada Bagian~\ref{sec:skema}):
-\begin{itemize}
-    \item \textbf{Kasus dasar ($x:=x\pm1$):} diterjemahkan menjadi
-    satu baris GOTO yang identik secara semantik, jelas ekivalen.
-    \item \textbf{Kasus sequencing ($P_a;P_b$):} jika terjemahan
-    $P_a$ dan $P_b$ masing-masing ekivalen (berdasarkan hipotesis
-    induksi) dan berhenti dengan kontrol jatuh ke baris pertama
-    setelahnya, maka menempatkan terjemahan $P_b$ tepat setelah
-    terjemahan $P_a$ menghasilkan program gabungan yang mengeksekusi
-    $P_a$ lalu $P_b$ secara berurutan, persis seperti semantik
-    $P_a;P_b$. (Diterapkan pada $Q = (\texttt{loop dalam})\,;\,
-    (x_1{:=}x_1{-}1)$ untuk menghasilkan $L_2$-$L_6$.)
-    \item \textbf{Kasus WHILE loop:} untuk \texttt{WHILE x != 0 DO
-    $P$ END} yang diterjemahkan sebagai
-    $L_j:\texttt{IF }x{=}0\texttt{ THEN GOTO }L_\ell;\ [\text{terjemahan }
-    P];\ L_{\ell-1}:\texttt{GOTO }L_j;\ L_\ell:\dots$ -- berdasarkan
-    hipotesis induksi, terjemahan $P$ ekivalen dengan $P$ itu sendiri
-    (berhenti dengan efek yang sama, jatuh ke baris pertama
-    setelahnya). Maka: jika $x=0$, GOTO langsung lompat ke $L_\ell$
-    (loop tidak dieksekusi sama sekali, sama seperti WHILE semantics);
-    jika $x\neq0$, GOTO mengeksekusi terjemahan $P$ (satu iterasi),
-    lalu $\texttt{GOTO }L_j$ mengulang pengujian $x=0$ kembali --
-    persis meniru \texttt{WHILE x != 0 DO P END} yang mengulang
-    selama $x\neq0$. Karena bagian ``Langkah 1'' menjamin setiap
-    loop pada WHILE program asli berhenti (baik loop dalam maupun
-    loop luar), versi GOTO-nya, yang mengeksekusi urutan langkah
-    identik, juga pasti mencapai $L_\ell$ (keluar loop) dalam
-    berhingga langkah.
-\end{itemize}
-Diterapkan pada program secara keseluruhan (loop dalam
-$\to L_2$-$L_5$, disusul $x_1{:=}x_1{-}1$ di $L_6$, dibungkus loop
-luar $\to L_1$-$L_7$, disusul \texttt{HALT} di $L_8$), GOTO program
-hasil terjemahan mengeksekusi urutan operasi pada $x_0,x_1,x_2$ yang
-identik dengan WHILE program asli pada setiap tahap, dan berhenti
-tepat ketika WHILE program asli berhenti.
-
-\paragraph{Kesimpulan.}
-GOTO program hasil terjemahan berhenti untuk semua
-$(x_1,x_2)\in\mathbb{N}^2$ dan menghasilkan $x_0=g(x_1,x_2)$, sehingga
-terbukti GOTO program tersebut menghitung $g$. $\blacksquare$
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.62\textwidth]{images/goto33.png}
+    \caption{Program GOTO Problem 3.3.}
+    \label{fig:goto33}
+\end{figure}
 
 % =========================================================
 % PRANALA KODE
 % =========================================================
 
 \section{Pranala Kode}
-Hasil \textit{running} implementasi kode dapat diakses di pranala
-repositori GitHub berikut: \url{https://github.com/khalilullahalfaath/goto-program-assignment-3-tekkom}.
-
-% =========================================================
-% REFERENSI
-% =========================================================
-
-% \section{Referensi}
-% \printbibliography[heading=none]
+Kode dan hasil \textit{running} tersedia di\\
+\url{https://github.com/khalilullahalfaath/goto-program-assignment-3-tekkom}.
 
 \end{document}
